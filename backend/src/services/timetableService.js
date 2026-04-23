@@ -12,6 +12,15 @@ const OPENAI_MODEL = "openai/gpt-4o-mini";
 
 dotenv.config({ path: envFile });
 
+function normalizeApiKey(value) {
+  return String(value || "").trim().replace(/^['"]|['"]$/g, "").replace(/;$/, "").trim();
+}
+
+function isConfiguredApiKey(value) {
+  const normalized = normalizeApiKey(value);
+  return normalized.startsWith("sk-");
+}
+
 async function readRuntimeConfig() {
   let fileConfig = {};
 
@@ -22,8 +31,11 @@ async function readRuntimeConfig() {
     fileConfig = {};
   }
 
+  const openaiApiKey = normalizeApiKey(fileConfig.OPENAI_API_KEY || fileConfig.OPENROUTER_API_KEY || "");
+
   return {
-    openaiApiKey: fileConfig.OPENAI_API_KEY || fileConfig.OPENROUTER_API_KEY || "",
+    openaiApiKey,
+    aiConfigured: isConfiguredApiKey(openaiApiKey),
     openaiModel: OPENAI_MODEL,
   };
 }
@@ -80,7 +92,7 @@ function buildFallbackSchedule(payload) {
 async function generateWithOpenRouter(payload) {
   const runtimeConfig = await readRuntimeConfig();
 
-  if (!runtimeConfig.openaiApiKey) {
+  if (!runtimeConfig.aiConfigured) {
     throw new Error("OpenAI API key is missing. Add OPENAI_API_KEY in backend/.env to generate timetables.");
   }
 
@@ -149,7 +161,7 @@ export async function getHealthState() {
 
   return {
     status: "ok",
-    ai: runtimeConfig.openaiApiKey ? "configured" : "missing",
+    ai: runtimeConfig.aiConfigured ? "configured" : "missing",
     model: runtimeConfig.openaiModel,
     storage: "json-file",
   };

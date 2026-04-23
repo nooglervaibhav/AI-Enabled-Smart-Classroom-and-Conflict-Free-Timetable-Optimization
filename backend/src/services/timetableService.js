@@ -23,12 +23,7 @@ async function readRuntimeConfig() {
   }
 
   return {
-    openaiApiKey:
-      process.env.OPENAI_API_KEY ||
-      fileConfig.OPENAI_API_KEY ||
-      process.env.OPENROUTER_API_KEY ||
-      fileConfig.OPENROUTER_API_KEY ||
-      "",
+    openaiApiKey: fileConfig.OPENAI_API_KEY || fileConfig.OPENROUTER_API_KEY || "",
     openaiModel: OPENAI_MODEL,
   };
 }

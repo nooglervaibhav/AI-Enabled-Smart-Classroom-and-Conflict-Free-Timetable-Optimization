@@ -20,6 +20,18 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
+app.get("/", async (_req, res) => {
+  res.json({
+    service: "smart-timetable-backend",
+    status: "ok",
+    api: "/api",
+  });
+});
+
+app.get("/healthz", async (_req, res) => {
+  res.json(await getHealthState());
+});
+
 app.get("/api/health", async (_req, res) => {
   res.json(await getHealthState());
 });
